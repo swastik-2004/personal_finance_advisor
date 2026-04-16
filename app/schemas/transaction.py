@@ -2,8 +2,6 @@ from datetime import datetime
 from pydantic import BaseModel,ConfigDict
 
 class TransactionCreate(BaseModel):
-    id: int
-    user_id: int
     amount: float
     description: str
     category: str | None
