@@ -4,7 +4,7 @@ from sqlalchemy import select
 
 from app.db.session import get_db
 from app.models.user import User
-from app.schemas.user import UserCreate, UserResponse, Token
+from app.schemas.user import UserCreate, UserLogin, UserResponse, Token
 from app.core.security import hash_password, verify_password, create_access_token
 
 router = APIRouter()
@@ -30,7 +30,7 @@ async def register(user_data: UserCreate, db:AsyncSession=Depends(get_db)):
     return Token(access_token=token, user=UserResponse.model_validate(user))
 
 @router.post("/login", response_model=Token)
-async def login(user_data: UserCreate, db: AsyncSession= Depends(get_db)):
+async def login(user_data: UserLogin, db: AsyncSession= Depends(get_db)):
     result = await db.execute(select(User).where(User.email == user_data.email))
     user = result.scalar_one_or_none()
     if not user or not verify_password(user_data.password, user.password_hash):
