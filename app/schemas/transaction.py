@@ -1,5 +1,5 @@
-from datetime import datetime
-from pydantic import BaseModel,ConfigDict
+from datetime import datetime, timezone
+from pydantic import BaseModel, ConfigDict, field_validator
 
 class TransactionCreate(BaseModel):
     amount: float
@@ -7,6 +7,11 @@ class TransactionCreate(BaseModel):
     category: str | None
     transaction_type: str
     date: datetime
+
+    @field_validator("date")
+    @classmethod
+    def strip_timezone(cls, v: datetime) -> datetime:
+        return v.astimezone(timezone.utc).replace(tzinfo=None)
 
 class TransactionResponse(BaseModel):
     id: int
