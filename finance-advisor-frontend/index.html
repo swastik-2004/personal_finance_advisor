@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Lumina Wealth - AI Finance Advisor</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "on-primary-fixed-variant": "#324768",
+          "surface-dim": "#d8dadc",
+          "on-primary": "#ffffff",
+          "on-error": "#ffffff",
+          "on-surface": "#191c1e",
+          "background": "#f7f9fb",
+          "on-tertiary": "#ffffff",
+          "surface-container": "#eceef0",
+          "on-tertiary-container": "#009d6e",
+          "error": "#ba1a1a",
+          "on-background": "#191c1e",
+          "surface-tint": "#4a5f81",
+          "error-container": "#ffdad6",
+          "primary-container": "#0a2342",
+          "primary": "#000d22",
+          "surface-variant": "#e0e3e5",
+          "inverse-surface": "#2d3133",
+          "outline": "#74777e",
+          "outline-variant": "#c4c6cf",
+          "secondary-container": "#6cf8bb",
+          "surface-container-highest": "#e0e3e5",
+          "on-error-container": "#93000a",
+          "surface-container-high": "#e6e8ea",
+          "on-secondary-fixed-variant": "#005236",
+          "on-tertiary-fixed": "#002114",
+          "on-secondary": "#ffffff",
+          "tertiary-container": "#00291a",
+          "inverse-primary": "#b2c7ef",
+          "inverse-on-surface": "#eff1f3",
+          "secondary": "#006c49",
+          "primary-fixed": "#d5e3ff",
+          "on-secondary-fixed": "#002113",
+          "on-secondary-container": "#00714d",
+          "surface": "#f7f9fb",
+          "surface-container-lowest": "#ffffff",
+          "surface-bright": "#f7f9fb",
+          "secondary-fixed": "#6ffbbe",
+          "tertiary": "#001008",
+          "on-primary-fixed": "#021c3a",
+          "secondary-fixed-dim": "#4edea3",
+          "tertiary-fixed-dim": "#45dfa4",
+          "surface-container-low": "#f2f4f6",
+          "tertiary-fixed": "#68fcbf",
+          "on-surface-variant": "#44474e",
+          "primary-fixed-dim": "#b2c7ef",
+          "on-primary-container": "#768baf"
+        },
+        borderRadius: {
+          DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"
+        },
+        fontFamily: {
+          headline: ["Manrope"], body: ["Inter"], label: ["Inter"]
+        }
+      }
+    }
+  }
+</script>
+<style>
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24; }
+  .scroll-hide::-webkit-scrollbar { display: none; }
+  .scroll-hide { -ms-overflow-style: none; scrollbar-width: none; }
+  .glass-fab { background: rgba(224,227,229,0.6); backdrop-filter: blur(20px); }
+  .hidden { display: none !important; }
+  .chat-bubble-ai p { margin-bottom: 0.5rem; }
+</style>
+</head>
+<body class="bg-surface text-on-surface font-body min-h-screen">
+
+<!-- ═══════════════════════════════════════════════════════════
+     AUTH VIEW
+═══════════════════════════════════════════════════════════ -->
+<div id="auth-view" class="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary to-primary-container p-4">
+  <div class="w-full max-w-md bg-surface-container-lowest rounded-3xl shadow-2xl p-8">
+    <div class="text-center mb-8">
+      <span class="font-headline font-extrabold text-3xl tracking-tighter text-primary">Lumina Wealth</span>
+      <p class="text-on-surface-variant text-sm mt-1">Your AI-powered finance advisor</p>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex bg-surface-container rounded-full p-1 mb-6">
+      <button id="tab-login" onclick="switchAuthTab('login')"
+        class="flex-1 py-2 rounded-full font-label font-bold text-sm transition-all bg-primary text-on-primary">
+        Sign In
+      </button>
+      <button id="tab-register" onclick="switchAuthTab('register')"
+        class="flex-1 py-2 rounded-full font-label font-bold text-sm transition-all text-on-surface-variant">
+        Register
+      </button>
+    </div>
+
+    <!-- Login Form -->
+    <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
+      <div>
+        <label class="text-xs font-label font-bold uppercase tracking-widest text-on-surface-variant mb-1 block">Email</label>
+        <input id="login-email" type="email" required placeholder="you@example.com"
+          class="w-full bg-surface-container-high rounded-lg px-4 py-3 text-on-surface border-none focus:ring-2 focus:ring-primary/30 text-sm"/>
+      </div>
+      <div>
+        <label class="text-xs font-label font-bold uppercase tracking-widest text-on-surface-variant mb-1 block">Password</label>
+        <input id="login-password" type="password" required placeholder="••••••••"
+          class="w-full bg-surface-container-high rounded-lg px-4 py-3 text-on-surface border-none focus:ring-2 focus:ring-primary/30 text-sm"/>
+      </div>
+      <div id="login-error" class="text-error text-xs hidden"></div>
+      <button type="submit"
+        class="w-full py-3 bg-gradient-to-br from-primary to-primary-container text-on-primary rounded-full font-label font-bold text-sm mt-2 hover:opacity-90 transition-opacity">
+        Sign In
+      </button>
+    </form>
+
+    <!-- Register Form -->
+    <form id="register-form" onsubmit="handleRegister(event)" class="space-y-4 hidden">
+      <div>
+        <label class="text-xs font-label font-bold uppercase tracking-widest text-on-surface-variant mb-1 block">First Name</label>
+        <input id="reg-firstname" type="text" required placeholder="Arthur"
+          class="w-full bg-surface-container-high rounded-lg px-4 py-3 text-on-surface border-none focus:ring-2 focus:ring-primary/30 text-sm"/>
+      </div>
+      <div>
+        <label class="text-xs font-label font-bold uppercase tracking-widest text-on-surface-variant mb-1 block">Last Name</label>
+        <input id="reg-lastname" type="text" required placeholder="Morgan"
+          class="w-full bg-surface-container-high rounded-lg px-4 py-3 text-on-surface border-none focus:ring-2 focus:ring-primary/30 text-sm"/>
+      </div>
+      <div>
+        <label class="text-xs font-label font-bold uppercase tracking-widest text-on-surface-variant mb-1 block">Email</label>
+        <input id="reg-email" type="email" required placeholder="you@example.com"
+          class="w-full bg-surface-container-high rounded-lg px-4 py-3 text-on-surface border-none focus:ring-2 focus:ring-primary/30 text-sm"/>
+      </div>
+      <div>
+        <label class="text-xs font-label font-bold uppercase tracking-widest text-on-surface-variant mb-1 block">Password</label>
+        <input id="reg-password" type="password" required placeholder="••••••••"
+          class="w-full bg-surface-container-high rounded-lg px-4 py-3 text-on-surface border-none focus:ring-2 focus:ring-primary/30 text-sm"/>
+      </div>
+      <div id="reg-error" class="text-error text-xs hidden"></div>
+      <button type="submit"
+        class="w-full py-3 bg-gradient-to-br from-primary to-primary-container text-on-primary rounded-full font-label font-bold text-sm mt-2 hover:opacity-90 transition-opacity">
+        Create Account
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MAIN APP VIEW (Dashboard + Chat)
+═══════════════════════════════════════════════════════════ -->
+<div id="app-view" class="hidden flex flex-col min-h-screen">
+
+  <!-- Top Nav -->
+  <header class="fixed top-0 w-full z-50 bg-primary shadow-none">
+    <div class="flex justify-between items-center h-16 px-8 max-w-[1920px] mx-auto">
+      <div class="flex items-center gap-8">
+        <span class="font-headline font-extrabold text-2xl tracking-tighter text-white">Lumina Wealth</span>
+        <nav class="flex gap-6">
+          <a onclick="showPage('dashboard')" class="nav-link font-headline font-bold tracking-tight text-lg text-white/70 hover:text-white transition-colors cursor-pointer" data-page="dashboard">Dashboard</a>
+          <a onclick="showPage('chat')" class="nav-link font-headline font-bold tracking-tight text-lg text-white/70 hover:text-white transition-colors cursor-pointer" data-page="chat">AI Chat</a>
+        </nav>
+      </div>
+      <div class="flex items-center gap-4">
+        <span id="nav-username" class="text-sm font-label text-white/80"></span>
+        <button onclick="logout()" class="p-2 rounded-full hover:bg-white/10 transition-all text-white" title="Logout">
+          <span class="material-symbols-outlined">logout</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ─── DASHBOARD PAGE ─── -->
+  <div id="page-dashboard" class="pt-16 min-h-screen bg-surface">
+    <div class="max-w-6xl mx-auto px-8 py-10">
+
+      <!-- Stats Row -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+        <div class="bg-surface-container-lowest rounded-3xl p-6 shadow-sm">
+          <span class="material-symbols-outlined text-secondary block mb-2">account_balance_wallet</span>
+          <p class="text-3xl font-headline font-bold text-primary" id="stat-total">—</p>
+          <p class="text-xs font-label uppercase tracking-widest text-on-surface-variant mt-1">Total Spending</p>
+        </div>
+        <div class="bg-surface-container-lowest rounded-3xl p-6 shadow-sm">
+          <span class="material-symbols-outlined text-secondary block mb-2">trending_up</span>
+          <p class="text-3xl font-headline font-bold text-primary" id="stat-forecast">—</p>
+          <p class="text-xs font-label uppercase tracking-widest text-on-surface-variant mt-1">Predicted Next Month</p>
+        </div>
+        <div class="bg-surface-container-lowest rounded-3xl p-6 shadow-sm">
+          <span class="material-symbols-outlined text-error block mb-2">warning</span>
+          <p class="text-3xl font-headline font-bold text-primary" id="stat-anomalies">—</p>
+          <p class="text-xs font-label uppercase tracking-widest text-on-surface-variant mt-1">Anomalies Detected</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+
+        <!-- Add Transaction -->
+        <div class="lg:col-span-2 bg-surface-container-lowest rounded-3xl p-6 shadow-sm self-start">
+          <h2 class="font-headline font-bold text-lg text-primary mb-5">Add Transaction</h2>
+          <form onsubmit="handleAddTransaction(event)" class="space-y-3">
+            <div>
+              <label class="text-xs font-label font-bold uppercase tracking-widest text-on-surface-variant mb-1 block">Amount ($)</label>
+              <input id="tx-amount" type="number" step="0.01" required placeholder="0.00"
+                class="w-full bg-surface-container-high rounded-lg px-4 py-2.5 text-on-surface border-none focus:ring-2 focus:ring-primary/30 text-sm"/>
+            </div>
+            <div>
+              <label class="text-xs font-label font-bold uppercase tracking-widest text-on-surface-variant mb-1 block">Description</label>
+              <input id="tx-desc" type="text" required placeholder="e.g. Grocery run"
+                class="w-full bg-surface-container-high rounded-lg px-4 py-2.5 text-on-surface border-none focus:ring-2 focus:ring-primary/30 text-sm"/>
+            </div>
+            <div>
+              <label class="text-xs font-label font-bold uppercase tracking-widest text-on-surface-variant mb-1 block">Category</label>
+              <select id="tx-category"
+                class="w-full bg-surface-container-high rounded-lg px-4 py-2.5 text-on-surface border-none focus:ring-2 focus:ring-primary/30 text-sm">
+                <option value="Food">Food</option>
+                <option value="Rent">Rent</option>
+                <option value="Travel">Travel</option>
+                <option value="Shopping">Shopping</option>
+                <option value="Health">Health</option>
+                <option value="Entertainment">Entertainment</option>
+                <option value="Utilities">Utilities</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-xs font-label font-bold uppercase tracking-widest text-on-surface-variant mb-1 block">Type</label>
+              <select id="tx-type"
+                class="w-full bg-surface-container-high rounded-lg px-4 py-2.5 text-on-surface border-none focus:ring-2 focus:ring-primary/30 text-sm">
+                <option value="expense">Expense</option>
+                <option value="income">Income</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-xs font-label font-bold uppercase tracking-widest text-on-surface-variant mb-1 block">Date</label>
+              <input id="tx-date" type="datetime-local" required
+                class="w-full bg-surface-container-high rounded-lg px-4 py-2.5 text-on-surface border-none focus:ring-2 focus:ring-primary/30 text-sm"/>
+            </div>
+            <div id="tx-error" class="text-error text-xs hidden"></div>
+            <button type="submit"
+              class="w-full py-2.5 bg-gradient-to-br from-primary to-primary-container text-on-primary rounded-full font-label font-bold text-sm hover:opacity-90 transition-opacity">
+              Add Transaction
+            </button>
+          </form>
+        </div>
+
+        <!-- Transactions List -->
+        <div class="lg:col-span-3 bg-surface-container-lowest rounded-3xl p-6 shadow-sm">
+          <div class="flex items-center justify-between mb-5">
+            <h2 class="font-headline font-bold text-lg text-primary">Transactions</h2>
+            <button onclick="loadDashboard()" class="text-xs font-label text-secondary hover:underline">Refresh</button>
+          </div>
+          <div id="tx-list" class="space-y-3 max-h-[520px] overflow-y-auto scroll-hide">
+            <p class="text-on-surface-variant text-sm text-center py-8">Loading transactions...</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── CHAT PAGE ─── -->
+  <div id="page-chat" class="hidden pt-16 h-screen flex overflow-hidden">
+    <!-- Sidebar -->
+    <aside class="h-full w-64 fixed left-0 top-16 bg-surface hidden md:flex flex-col gap-4 p-6 overflow-y-auto">
+      <div class="mb-6">
+        <div class="flex items-center gap-3 mb-2">
+          <div class="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
+            <span class="material-symbols-outlined text-white" style="font-variation-settings:'FILL' 1;">forum</span>
+          </div>
+          <div>
+            <h2 class="font-headline font-bold text-primary text-sm">RAG Assistant</h2>
+            <p class="text-xs text-on-surface-variant opacity-70">AI-Driven Strategy</p>
+          </div>
+        </div>
+        <button onclick="clearChat()"
+          class="w-full mt-4 py-2.5 px-4 bg-gradient-to-br from-primary to-primary-container text-on-primary rounded-full font-label font-medium text-sm flex items-center justify-center gap-2 transition-transform active:scale-95">
+          <span class="material-symbols-outlined text-sm">add</span>
+          New Chat
+        </button>
+      </div>
+      <div class="flex flex-col gap-1">
+        <p class="text-[10px] font-label font-bold uppercase tracking-widest text-on-surface-variant mb-2">Suggested</p>
+        <button onclick="sendSuggestion('How can I reduce my food spending?')" class="p-3 text-slate-600 hover:bg-slate-100 rounded-lg flex items-center gap-3 cursor-pointer transition-colors text-left">
+          <span class="material-symbols-outlined text-lg">restaurant</span>
+          <span class="font-label text-sm">Reduce food spending</span>
+        </button>
+        <button onclick="sendSuggestion('What will my spending be next month?')" class="p-3 text-slate-600 hover:bg-slate-100 rounded-lg flex items-center gap-3 cursor-pointer transition-colors text-left">
+          <span class="material-symbols-outlined text-lg">trending_up</span>
+          <span class="font-label text-sm">Forecast next month</span>
+        </button>
+        <button onclick="sendSuggestion('Do I have any unusual transactions?')" class="p-3 text-slate-600 hover:bg-slate-100 rounded-lg flex items-center gap-3 cursor-pointer transition-colors text-left">
+          <span class="material-symbols-outlined text-lg">warning</span>
+          <span class="font-label text-sm">Check anomalies</span>
+        </button>
+        <button onclick="sendSuggestion('How can I save more money each month?')" class="p-3 text-slate-600 hover:bg-slate-100 rounded-lg flex items-center gap-3 cursor-pointer transition-colors text-left">
+          <span class="material-symbols-outlined text-lg">savings</span>
+          <span class="font-label text-sm">Savings tips</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Chat Canvas -->
+    <section class="flex-1 md:ml-64 flex flex-col bg-surface overflow-hidden">
+      <div id="chat-messages" class="flex-1 overflow-y-auto px-8 py-10 scroll-hide space-y-8">
+        <!-- Welcome message -->
+        <div class="flex gap-6 items-start">
+          <div class="w-10 h-10 rounded-full bg-primary flex-shrink-0 flex items-center justify-center mt-1">
+            <span class="material-symbols-outlined text-white text-xl" style="font-variation-settings:'FILL' 1;">smart_toy</span>
+          </div>
+          <div class="space-y-3 max-w-2xl">
+            <h1 class="font-headline font-bold text-3xl tracking-tight text-primary">Hello! I'm Lumina.</h1>
+            <p class="text-on-surface-variant text-lg leading-relaxed">
+              I'm your AI-powered personal finance advisor. Ask me anything about your spending, savings, or financial goals.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Input -->
+      <div class="p-6 bg-surface border-t border-outline-variant border-opacity-20">
+        <div class="max-w-4xl mx-auto">
+          <div class="relative flex items-center gap-4 bg-surface-container-high rounded-3xl p-2 pl-6">
+            <input id="chat-input" type="text" placeholder="Ask Lumina about your finances..."
+              class="flex-1 bg-transparent border-none focus:ring-0 text-on-surface py-3 font-body text-base placeholder:text-on-surface-variant placeholder:opacity-50"
+              onkeydown="if(event.key==='Enter') sendChat()"/>
+            <button onclick="sendChat()" id="send-btn"
+              class="w-12 h-12 bg-primary text-on-primary rounded-2xl flex items-center justify-center hover:scale-105 active:scale-95 transition-transform shadow-lg">
+              <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">send</span>
+            </button>
+          </div>
+          <div class="flex items-center justify-center gap-6 mt-3 opacity-40">
+            <span class="text-[10px] font-label font-bold uppercase tracking-widest">End-to-End Encrypted</span>
+            <span class="text-[10px] font-label font-bold uppercase tracking-widest">Powered by Llama 3.3</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+</div><!-- end app-view -->
+
+<!-- ═══════════════════════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════════════════════ -->
+<script>
+const API = 'http://localhost:8000';
+let token = localStorage.getItem('lw_token');
+let currentUser = localStorage.getItem('lw_user') || 'User';
+
+// ── Boot ──────────────────────────────────────────────────────
+window.onload = () => {
+  if (token) {
+    showApp();
+  } else {
+    document.getElementById('auth-view').classList.remove('hidden');
+  }
+};
+
+function showApp() {
+  document.getElementById('auth-view').classList.add('hidden');
+  document.getElementById('app-view').classList.remove('hidden');
+  document.getElementById('nav-username').textContent = currentUser;
+  showPage('dashboard');
+}
+
+// ── Auth tab switch ──────────────────────────────────────────
+function switchAuthTab(tab) {
+  const isLogin = tab === 'login';
+  document.getElementById('login-form').classList.toggle('hidden', !isLogin);
+  document.getElementById('register-form').classList.toggle('hidden', isLogin);
+  document.getElementById('tab-login').className = `flex-1 py-2 rounded-full font-label font-bold text-sm transition-all ${isLogin ? 'bg-primary text-on-primary' : 'text-on-surface-variant'}`;
+  document.getElementById('tab-register').className = `flex-1 py-2 rounded-full font-label font-bold text-sm transition-all ${!isLogin ? 'bg-primary text-on-primary' : 'text-on-surface-variant'}`;
+}
+
+// ── Login ────────────────────────────────────────────────────
+async function handleLogin(e) {
+  e.preventDefault();
+  const email = document.getElementById('login-email').value;
+  const password = document.getElementById('login-password').value;
+  const errEl = document.getElementById('login-error');
+  errEl.classList.add('hidden');
+  try {
+    const res = await fetch(`${API}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      const msg = Array.isArray(data.detail)
+        ? data.detail.map(d => d.msg).join(', ')
+        : (data.detail || 'Login failed');
+      throw new Error(msg);
+    }
+    token = data.access_token;
+    currentUser = data.user ? `${data.user.first_name} ${data.user.last_name}` : email.split('@')[0];
+    localStorage.setItem('lw_token', token);
+    localStorage.setItem('lw_user', currentUser);
+    showApp();
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.classList.remove('hidden');
+  }
+}
+
+// ── Register ─────────────────────────────────────────────────
+async function handleRegister(e) {
+  e.preventDefault();
+  const first_name = document.getElementById('reg-firstname').value;
+  const last_name = document.getElementById('reg-lastname').value;
+  const email = document.getElementById('reg-email').value;
+  const password = document.getElementById('reg-password').value;
+  const errEl = document.getElementById('reg-error');
+  errEl.classList.add('hidden');
+  try {
+    const res = await fetch(`${API}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ first_name, last_name, email, password })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      const msg = Array.isArray(data.detail)
+        ? data.detail.map(d => d.msg).join(', ')
+        : (data.detail || 'Registration failed');
+      throw new Error(msg);
+    }
+    document.getElementById('login-email').value = email;
+    document.getElementById('login-password').value = password;
+    switchAuthTab('login');
+    await handleLogin({ preventDefault: () => {} });
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.classList.remove('hidden');
+  }
+}
+
+// ── Logout ───────────────────────────────────────────────────
+function logout() {
+  localStorage.removeItem('lw_token');
+  localStorage.removeItem('lw_user');
+  token = null;
+  document.getElementById('app-view').classList.add('hidden');
+  document.getElementById('auth-view').classList.remove('hidden');
+}
+
+// ── Page switching ───────────────────────────────────────────
+function showPage(page) {
+  ['dashboard', 'chat'].forEach(p => {
+    document.getElementById(`page-${p}`).classList.toggle('hidden', p !== page);
+  });
+  document.querySelectorAll('.nav-link').forEach(el => {
+    const active = el.dataset.page === page;
+    el.className = `nav-link font-headline font-bold tracking-tight text-lg transition-colors cursor-pointer ${active ? 'text-white border-b-2 border-secondary pb-1' : 'text-white/60 hover:text-white'}`;
+  });
+  if (page === 'dashboard') loadDashboard();
+}
+
+// ── API helper ───────────────────────────────────────────────
+async function api(path, options = {}) {
+  const res = await fetch(`${API}${path}`, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+      ...(options.headers || {})
+    }
+  });
+  if (res.status === 401) { logout(); throw new Error('Session expired'); }
+  return res;
+}
+
+// ── Dashboard ────────────────────────────────────────────────
+async function loadDashboard() {
+  await Promise.all([loadTransactions(), loadMLStats()]);
+}
+
+async function loadTransactions() {
+  try {
+    const res = await api('/transactions');
+    const txs = await res.json();
+    renderTransactions(txs);
+    const total = txs.reduce((s, t) => s + t.amount, 0);
+    document.getElementById('stat-total').textContent = `$${total.toFixed(2)}`;
+  } catch (e) {
+    document.getElementById('tx-list').innerHTML = `<p class="text-error text-sm text-center py-4">${e.message}</p>`;
+  }
+}
+
+async function loadMLStats() {
+  try {
+    const [fRes, aRes] = await Promise.all([
+      api('/predict/forecast'),
+      api('/predicted/anomalies')
+    ]);
+    if (fRes.ok) {
+      const f = await fRes.json();
+      document.getElementById('stat-forecast').textContent = `$${f.predicted_monthly_spending}`;
+    } else {
+      document.getElementById('stat-forecast').textContent = 'No data';
+    }
+    if (aRes.ok) {
+      const a = await aRes.json();
+      document.getElementById('stat-anomalies').textContent = a.total_flagged;
+    }
+  } catch (e) { /* silently fail ML stats */ }
+}
+
+function renderTransactions(txs) {
+  const el = document.getElementById('tx-list');
+  if (!txs.length) {
+    el.innerHTML = `<p class="text-on-surface-variant text-sm text-center py-8">No transactions yet. Add one!</p>`;
+    return;
+  }
+  const categoryColors = {
+    Food: 'text-orange-500', Rent: 'text-blue-500', Travel: 'text-purple-500',
+    Shopping: 'text-pink-500', Health: 'text-red-500', Entertainment: 'text-yellow-500',
+    Utilities: 'text-cyan-500', Other: 'text-slate-500'
+  };
+  const categoryIcons = {
+    Food: 'restaurant', Rent: 'home', Travel: 'flight', Shopping: 'shopping_bag',
+    Health: 'medical_services', Entertainment: 'movie', Utilities: 'bolt', Other: 'receipt'
+  };
+  el.innerHTML = txs.slice().reverse().map(t => {
+    const cat = t.category || 'Other';
+    const color = categoryColors[cat] || 'text-slate-500';
+    const icon = categoryIcons[cat] || 'receipt';
+    const date = new Date(t.date).toLocaleDateString();
+    return `
+      <div class="flex items-center justify-between p-4 bg-surface-container rounded-2xl group">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-surface-container-high flex items-center justify-center">
+            <span class="material-symbols-outlined text-base ${color}">${icon}</span>
+          </div>
+          <div>
+            <p class="font-label font-semibold text-on-surface text-sm">${t.description}</p>
+            <p class="text-xs text-on-surface-variant">${cat} · ${date}</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="font-headline font-bold text-primary">$${t.amount.toFixed(2)}</span>
+          <button onclick="deleteTransaction(${t.id})" class="opacity-0 group-hover:opacity-100 transition-opacity p-1 text-error hover:bg-error-container rounded-lg">
+            <span class="material-symbols-outlined text-base">delete</span>
+          </button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+async function handleAddTransaction(e) {
+  e.preventDefault();
+  const errEl = document.getElementById('tx-error');
+  errEl.classList.add('hidden');
+  const body = {
+    amount: parseFloat(document.getElementById('tx-amount').value),
+    description: document.getElementById('tx-desc').value,
+    category: document.getElementById('tx-category').value,
+    transaction_type: document.getElementById('tx-type').value,
+    date: new Date(document.getElementById('tx-date').value).toISOString()
+  };
+  try {
+    const res = await api('/transactions', { method: 'POST', body: JSON.stringify(body) });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Failed to add transaction');
+    e.target.reset();
+    await loadDashboard();
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.classList.remove('hidden');
+  }
+}
+
+async function deleteTransaction(id) {
+  if (!confirm('Delete this transaction?')) return;
+  try {
+    await api(`/transactions/${id}`, { method: 'DELETE' });
+    await loadDashboard();
+  } catch (e) { alert(e.message); }
+}
+
+// Set default date to now
+document.addEventListener('DOMContentLoaded', () => {
+  const dateInput = document.getElementById('tx-date');
+  if (dateInput) {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    dateInput.value = now.toISOString().slice(0, 16);
+  }
+});
+
+// ── Chat ─────────────────────────────────────────────────────
+async function sendChat() {
+  const input = document.getElementById('chat-input');
+  const query = input.value.trim();
+  if (!query) return;
+  input.value = '';
+  appendMessage('user', query);
+  const thinkingId = appendMessage('ai', '<span class="opacity-50 italic">Lumina is thinking...</span>');
+  document.getElementById('send-btn').disabled = true;
+  try {
+    const res = await api('/chat', { method: 'POST', body: JSON.stringify({ query }) });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Chat error');
+    updateMessage(thinkingId, data.response);
+  } catch (err) {
+    updateMessage(thinkingId, `<span class="text-error">${err.message}</span>`);
+  } finally {
+    document.getElementById('send-btn').disabled = false;
+  }
+}
+
+function sendSuggestion(text) {
+  document.getElementById('chat-input').value = text;
+  showPage('chat');
+  setTimeout(sendChat, 100);
+}
+
+function appendMessage(role, content) {
+  const container = document.getElementById('chat-messages');
+  const id = `msg-${Date.now()}`;
+  if (role === 'user') {
+    container.insertAdjacentHTML('beforeend', `
+      <div class="flex gap-6 items-start justify-end" id="${id}">
+        <div class="bg-primary text-on-primary p-5 rounded-2xl rounded-tr-none max-w-xl shadow-sm">
+          <p class="text-sm leading-relaxed">${escapeHtml(content)}</p>
+        </div>
+        <div class="w-10 h-10 rounded-full bg-surface-container flex-shrink-0 mt-1 flex items-center justify-center">
+          <span class="material-symbols-outlined text-on-surface-variant">person</span>
+        </div>
+      </div>`);
+  } else {
+    container.insertAdjacentHTML('beforeend', `
+      <div class="flex gap-6 items-start" id="${id}">
+        <div class="w-10 h-10 rounded-full bg-primary flex-shrink-0 flex items-center justify-center mt-1">
+          <span class="material-symbols-outlined text-white text-xl" style="font-variation-settings:'FILL' 1;">smart_toy</span>
+        </div>
+        <div class="max-w-2xl bg-surface-container-lowest rounded-2xl rounded-tl-none p-5 shadow-sm chat-bubble-ai">
+          <p class="text-on-surface text-sm leading-relaxed">${content}</p>
+        </div>
+      </div>`);
+  }
+  container.scrollTop = container.scrollHeight;
+  return id;
+}
+
+function updateMessage(id, content) {
+  const el = document.getElementById(id);
+  if (el) {
+    el.querySelector('p').innerHTML = formatResponse(content);
+    document.getElementById('chat-messages').scrollTop = 999999;
+  }
+}
+
+function formatResponse(text) {
+  return escapeHtml(text)
+    .replace(/\n\n/g, '</p><p class="text-on-surface text-sm leading-relaxed mt-2">')
+    .replace(/\n/g, '<br/>');
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function clearChat() {
+  document.getElementById('chat-messages').innerHTML = `
+    <div class="flex gap-6 items-start">
+      <div class="w-10 h-10 rounded-full bg-primary flex-shrink-0 flex items-center justify-center mt-1">
+        <span class="material-symbols-outlined text-white text-xl" style="font-variation-settings:'FILL' 1;">smart_toy</span>
+      </div>
+      <div class="space-y-3 max-w-2xl">
+        <h1 class="font-headline font-bold text-3xl tracking-tight text-primary">Hello! I'm Lumina.</h1>
+        <p class="text-on-surface-variant text-lg leading-relaxed">I'm your AI-powered personal finance advisor. Ask me anything about your spending, savings, or financial goals.</p>
+      </div>
+    </div>`;
+}
+</script>
+</body>
+</html>
