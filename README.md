@@ -183,7 +183,12 @@ ACCESS_TOKEN_EXPIRE_MINUTES=60
 GROQ_API_KEY=your-groq-api-key
 ```
 
-### 5. Run the server
+### 5. Build the FAISS vector store
+```bash
+python -m rag.ingest
+```
+
+### 6. Run the server
 ```bash
 uvicorn app.main:app --reload
 ```
@@ -255,7 +260,7 @@ docker run -p 8000:8000 --env-file .env finance-advisor
 - [x] Chart.js dashboard (doughnut + trend line)
 - [x] CSV export
 - [x] Docker + Render deployment
-- [x] FAISS vector store (semantic retrieval)
+- [x] FAISS vector store (semantic retrieval) — local only, live demo uses in-memory retrieval
 - [ ] GitHub Actions CI/CD
 - [ ] Bank API integration (Plaid)
 
