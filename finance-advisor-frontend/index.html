@@ -505,7 +505,7 @@ function renderCategoryChart(transactions) {
 
   const labels = Object.keys(totals);
   const data = labels.map(l => totals[l]);
-  const palette = ['#4a5f81','#6b8cba','#a8c4e0','#2e4a6b','#8fa8c8','#c5d8ed','#3d5a7a','#7a9dbf'];
+  const palette = ['#4a5f81','#e07b54','#4caf8a','#e8b84b','#9b6bb5','#e05c7a','#5ba8d4','#7cb87a'];
   const colors = labels.map((_, i) => palette[i % palette.length]);
 
   const ctx = document.getElementById('category-chart').getContext('2d');
