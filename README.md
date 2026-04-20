@@ -261,6 +261,7 @@ docker run -p 8000:8000 --env-file .env finance-advisor
 - [x] CSV export
 - [x] Docker + Render deployment
 - [x] FAISS vector store (semantic retrieval) — local only, live demo uses in-memory retrieval
+- [x] pytest test suite (auth + health endpoints)
 
 ---
 
