@@ -290,7 +290,12 @@
         <div class="lg:col-span-3 bg-surface-container-lowest rounded-3xl p-6 shadow-sm">
           <div class="flex items-center justify-between mb-5">
             <h2 class="font-headline font-bold text-lg text-primary">Transactions</h2>
-            <button onclick="loadDashboard()" class="text-xs font-label text-secondary hover:underline">Refresh</button>
+            <div class="flex gap-3">
+              <button onclick="exportCSV()" class="text-xs font-label text-secondary hover:underline flex items-center gap-1">
+                <span class="material-symbols-outlined text-sm">download</span>Export CSV
+              </button>
+              <button onclick="loadDashboard()" class="text-xs font-label text-secondary hover:underline">Refresh</button>
+            </div>
           </div>
           <div id="tx-list" class="space-y-3 max-h-[520px] overflow-y-auto scroll-hide">
             <p class="text-on-surface-variant text-sm text-center py-8">Loading transactions...</p>
@@ -642,7 +647,25 @@ async function loadMLStats() {
   }
 }
 
+let cachedTransactions = [];
+
+function exportCSV() {
+  if (!cachedTransactions.length) return;
+  const header = ['Date', 'Description', 'Category', 'Type', 'Amount'];
+  const rows = cachedTransactions.map(t => [
+    new Date(t.date).toLocaleDateString(),
+    `"${(t.description || '').replace(/"/g, '""')}"`,
+    t.category, t.transaction_type, t.amount.toFixed(2)
+  ]);
+  const csv = [header, ...rows].map(r => r.join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+  a.download = 'transactions.csv';
+  a.click();
+}
+
 function renderTransactions(txs) {
+  cachedTransactions = txs;
   const el = document.getElementById('tx-list');
   if (!txs.length) {
     el.innerHTML = `<p class="text-on-surface-variant text-sm text-center py-8">No transactions yet. Add one!</p>`;
