@@ -1,16 +1,20 @@
 # Personal Finance AI Advisor
 
-A production-grade full-stack AI-powered personal finance application that combines backend engineering, machine learning, and LLM-based RAG to help users track spending, get predictions, and receive personalized financial advice.
+A production-grade full-stack AI-powered personal finance application combining backend engineering, machine learning, and LLM-based RAG to help users track spending, get predictions, and receive personalized financial advice.
+
+**Live Demo:** https://personal-finance-advisor-ovjk.onrender.com
 
 ---
 
 ## Features
 
-- **Transaction Management** — Upload CSV or manually add income/expense transactions
-- **Auto Categorization** — ML model classifies transactions (Food, Rent, Travel, etc.)
-- **Spending Forecasting** — Predicts next month's expenses using time-series models
-- **Anomaly Detection** — Flags unusual spending patterns
-- **AI Chatbot** — RAG-based assistant answers financial questions using your own data
+- **Transaction Management** — Add income/expense transactions manually or via CSV upload
+- **Auto Categorization** — TF-IDF + Logistic Regression classifier predicts category as you type the description
+- **Spending Forecasting** — Predicts next month's expenses from historical monthly averages
+- **Anomaly Detection** — Isolation Forest flags unusual spending patterns personalized to your data
+- **AI Chatbot** — RAG-based assistant answers financial questions using your transaction data as context
+- **Visual Analytics** — Category doughnut chart + monthly trend line chart (Chart.js)
+- **CSV Export** — Download all transactions as a CSV file
 - **Secure Auth** — JWT-based authentication with bcrypt password hashing
 
 ---
@@ -19,16 +23,40 @@ A production-grade full-stack AI-powered personal finance application that combi
 
 | Layer | Technology |
 |---|---|
-| Framework | FastAPI |
-| Database | PostgreSQL + SQLAlchemy (async) |
+| Framework | FastAPI (async) |
+| Database | PostgreSQL via Supabase + SQLAlchemy (async) |
 | DB Driver | asyncpg |
-| Migrations | Alembic |
 | Auth | JWT (python-jose) + passlib (bcrypt) |
 | Validation | Pydantic v2 |
-| ML | scikit-learn, XGBoost, Prophet |
-| RAG | LangChain, LangGraph, FAISS, Sentence Transformers |
-| LLM | OpenAI GPT / HuggingFace |
+| ML — Classification | TF-IDF + Logistic Regression (scikit-learn Pipeline) |
+| ML — Forecasting | Monthly average (pandas time-series groupby) |
+| ML — Anomaly Detection | Isolation Forest (scikit-learn, fitted at inference time) |
+| RAG — Retrieval | TF-IDF cosine similarity (LangGraph wired, FAISS upgrade in progress) |
+| RAG — Orchestration | LangChain + LangGraph |
+| LLM | Groq API (llama-3.3-70b-versatile) |
+| Frontend | Vanilla JS + Chart.js 4.4 |
+| Containerization | Docker |
+| Deployment | Render |
 | Server | Uvicorn (ASGI) |
+
+---
+
+## Architecture
+
+```
+Browser (HTML/JS)
+      │
+      ▼
+FastAPI Backend
+      │
+      ├── /auth          → JWT login/register
+      ├── /transactions  → CRUD + CSV
+      ├── /ml            → TF-IDF predict, IsolationForest anomaly, forecast
+      └── /chat          → LangGraph RAG → Groq LLM
+            │
+            ├── retrieve_node  → TF-IDF knowledge retrieval
+            └── respond_node   → Groq LLM with user context
+```
 
 ---
 
@@ -37,28 +65,29 @@ A production-grade full-stack AI-powered personal finance application that combi
 ```
 finance-advisor-backend/
 ├── app/
-│   ├── api/               # Route handlers (auth, transactions, ML, chat)
+│   ├── api/               # Route handlers (auth, transactions, ml, chat)
 │   ├── auth/              # Auth dependencies (get_current_user)
-│   ├── core/              # Config, security (JWT, hashing)
+│   ├── core/              # Config, security (JWT, password hashing)
 │   ├── db/                # SQLAlchemy engine, session, base
 │   ├── models/            # ORM models (User, Transaction)
 │   ├── schemas/           # Pydantic request/response schemas
-│   └── main.py            # FastAPI app factory
+│   └── main.py            # FastAPI app factory + CORS
 ├── ml/
-│   ├── train.py           # Training pipeline
-│   ├── predict.py         # Inference
-│   └── models/            # Saved model files
+│   ├── train.py           # TF-IDF + LogisticRegression training pipeline
+│   ├── predict.py         # Category inference + spending forecast
+│   └── models/
+│       └── classifier.pkl # Pre-trained TF-IDF pipeline (committed)
 ├── rag/
-│   ├── ingest.py          # Document ingestion into vector DB
-│   ├── retriever.py       # FAISS vector search
-│   ├── chatbot.py         # LLM interaction
-│   └── graph.py           # LangGraph workflow
-├── db/
-│   └── schema.sql         # Raw SQL schema reference
-├── config/                # Extra configuration files
+│   ├── ingest.py          # FAISS vector store builder (HuggingFace embeddings)
+│   ├── retriever.py       # TF-IDF cosine retriever (current)
+│   ├── chatbot.py         # Groq LLM prompt + response
+│   └── graph.py           # LangGraph: retrieve → respond workflow
+├── finance-advisor-frontend/
+│   └── index.html         # Single-page frontend (auth, dashboard, charts)
+├── Dockerfile
+├── render.yaml
 ├── requirements.txt
-├── run.py                 # Entry point
-└── .env                   # Environment variables (not committed)
+└── .env                   # Not committed — see setup below
 ```
 
 ---
@@ -83,8 +112,8 @@ finance-advisor-backend/
 | user_id | Integer (FK → users.id) |
 | amount | Numeric(10,2) |
 | description | String |
-| category | String (nullable) |
-| transaction_type | String (income/expense) |
+| category | String |
+| transaction_type | String (income / expense) |
 | date | DateTime |
 
 ---
@@ -96,6 +125,7 @@ finance-advisor-backend/
 |---|---|---|
 | POST | `/auth/register` | Register new user |
 | POST | `/auth/login` | Login, returns JWT |
+| GET | `/auth/me` | Get current user info |
 
 ### Transactions
 | Method | Endpoint | Description |
@@ -107,8 +137,9 @@ finance-advisor-backend/
 ### ML
 | Method | Endpoint | Description |
 |---|---|---|
-| GET | `/predict/expenses` | Forecast next month spend |
-| GET | `/anomaly/check` | Detect anomalies |
+| GET | `/ml/predict/category?description=` | Predict category from description text |
+| GET | `/ml/predict/forecast` | Forecast next month's spending |
+| GET | `/ml/predicted/anomalies` | Detect anomalous transactions |
 
 ### Chatbot
 | Method | Endpoint | Description |
@@ -122,7 +153,7 @@ finance-advisor-backend/
 
 ---
 
-## Setup
+## Setup (Local)
 
 ### 1. Clone the repo
 ```bash
@@ -145,26 +176,19 @@ pip install -r requirements.txt
 ### 4. Configure environment variables
 Create a `.env` file in the root:
 ```
-DATABASE_URL=postgresql+asyncpg://postgres:YOUR_PASSWORD@localhost:5432/finance_db
+DATABASE_URL=postgresql+asyncpg://user:password@host:5432/dbname
 SECRET_KEY=your-secret-key
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=60
-OPENAI_API_KEY=your-openai-key
+GROQ_API_KEY=your-groq-api-key
 ```
 
-### 5. Set up PostgreSQL
-- Create a database named `finance_db`
-- Run Alembic migrations (once configured):
+### 5. Run the server
 ```bash
-alembic upgrade head
+uvicorn app.main:app --reload
 ```
 
-### 6. Run the server
-```bash
-python run.py
-```
-
-API available at `http://localhost:8000`
+API available at `http://localhost:8000`  
 Interactive docs at `http://localhost:8000/docs`
 
 ---
@@ -172,46 +196,71 @@ Interactive docs at `http://localhost:8000/docs`
 ## ML Pipeline
 
 ```
-Raw Transactions → Cleaning → Feature Engineering → Model Training → Saved Model
-                                                                          ↓
-                                                               Inference via API
+Transaction Description (text)
+        │
+        ▼
+TF-IDF Vectorizer (ngram 1-2)
+        │
+        ▼
+Logistic Regression Classifier
+        │
+        ▼
+Predicted Category (Food / Rent / Travel / Shopping / Health / Entertainment / Utilities / Other)
 ```
 
-Models:
-- **Classification** — XGBoost categorizes transaction descriptions
-- **Forecasting** — Prophet predicts monthly spending
-- **Anomaly Detection** — Isolation Forest flags unusual transactions
+- **Classifier** — scikit-learn Pipeline (TfidfVectorizer + LogisticRegression), trained on 75 labeled samples, pre-trained pkl committed to repo
+- **Forecasting** — groups transactions by month, returns mean monthly spend
+- **Anomaly Detection** — Isolation Forest fitted at inference time on the user's own expense history (no pkl dependency, personalized per user)
 
 ---
 
 ## RAG Chatbot Pipeline
 
 ```
-User Query → Embedding → FAISS Vector Search → Top-K Context → LLM → Response
+User Query
+    │
+    ▼
+LangGraph: retrieve_node
+    │  TF-IDF cosine similarity over financial knowledge base
+    ▼
+LangGraph: respond_node
+    │  Groq LLM (llama-3.3-70b) with retrieved context + user transaction summary
+    ▼
+Response
 ```
 
-- Embeddings: Sentence Transformers
-- Vector DB: FAISS
-- Orchestration: LangChain + LangGraph
-- LLM: OpenAI GPT-4 / HuggingFace
+> FAISS upgrade in progress — will replace TF-IDF retrieval with HuggingFace sentence embeddings (`all-MiniLM-L6-v2`) for semantic search.
+
+---
+
+## Docker
+
+```bash
+docker build -t finance-advisor .
+docker run -p 8000:8000 --env-file .env finance-advisor
+```
 
 ---
 
 ## Roadmap
 
-- [x] Project structure & environment setup
-- [x] Database models (User, Transaction)
-- [x] JWT Authentication
-- [ ] Transaction CRUD endpoints
-- [ ] Alembic migrations
-- [ ] ML expense classifier
-- [ ] Spending forecasting
-- [ ] Anomaly detection
-- [ ] RAG chatbot
-- [ ] Docker + deployment (AWS EC2 + Nginx)
+- [x] FastAPI project structure
+- [x] PostgreSQL + SQLAlchemy async ORM
+- [x] JWT Authentication (register / login / me)
+- [x] Transaction CRUD endpoints
+- [x] TF-IDF expense classifier with auto-predict UI
+- [x] Monthly spending forecast
+- [x] Isolation Forest anomaly detection
+- [x] LangGraph RAG chatbot (Groq LLM)
+- [x] Chart.js dashboard (doughnut + trend line)
+- [x] CSV export
+- [x] Docker + Render deployment
+- [ ] FAISS vector store (semantic retrieval)
+- [ ] GitHub Actions CI/CD
+- [ ] Bank API integration (Plaid)
 
 ---
 
 ## Resume Description
 
-> Built a production-grade AI-powered personal finance advisor using FastAPI, PostgreSQL, and LangChain — integrating ML models (XGBoost, Prophet) for expense classification and forecasting with a RAG-based chatbot (FAISS + GPT-4) for personalized financial insights.
+> Built a production-grade AI-powered personal finance advisor using FastAPI, PostgreSQL (Supabase), and LangChain — integrating a TF-IDF + Logistic Regression expense classifier, Isolation Forest anomaly detection, and a LangGraph RAG chatbot powered by Groq (LLaMA 3.3 70B) for personalized financial insights. Deployed live on Render with Docker.
