@@ -229,7 +229,7 @@ LangGraph: respond_node
 Response
 ```
 
-> FAISS upgrade in progress — will replace TF-IDF retrieval with HuggingFace sentence embeddings (`all-MiniLM-L6-v2`) for semantic search.
+> Retrieval uses FAISS with HuggingFace sentence embeddings (`all-MiniLM-L6-v2`) for semantic search — finds relevant knowledge even when query wording differs from the stored documents.
 
 ---
 
@@ -255,7 +255,7 @@ docker run -p 8000:8000 --env-file .env finance-advisor
 - [x] Chart.js dashboard (doughnut + trend line)
 - [x] CSV export
 - [x] Docker + Render deployment
-- [ ] FAISS vector store (semantic retrieval)
+- [x] FAISS vector store (semantic retrieval)
 - [ ] GitHub Actions CI/CD
 - [ ] Bank API integration (Plaid)
 
