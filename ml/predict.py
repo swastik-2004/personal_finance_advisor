@@ -10,16 +10,9 @@ def load_model(name):
         raise FileNotFoundError(f"Model file {name} not found in {MODEL_DIR}")
     return joblib.load(path)
 
-def predict_category(amount:float)->bool:
-    model=load_model("classifier.pkl")
-    le=load_model("label_encoder.pkl")
-    prediction=model.predict([[amount]])
-    return le.inverse_transform(prediction)[0]
-
-def detect_anomaly(amount: float) -> bool:
-    model = load_model("anomaly_detector.pkl")
-    result = model.predict([[amount]])
-    return result[0] == -1
+def predict_category(description: str) -> str:
+    model = load_model("classifier.pkl")
+    return model.predict([description.lower()])[0]
 
 def forecast_spending(transactions: list[dict])->float:
     if not transactions:

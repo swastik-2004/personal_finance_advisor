@@ -13,10 +13,10 @@ from ml.predict import predict_category, forecast_spending
 router=APIRouter()
 
 @router.get("/predict/category")
-async def predict_expense_category(amount: float, current_user: User = Depends(get_current_user)):
+async def predict_expense_category(description: str, current_user: User = Depends(get_current_user)):
     try:
-        category = predict_category(amount)
-        return {"amount": amount, "predicted_category": category}
+        category = predict_category(description)
+        return {"description": description, "predicted_category": category}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
