@@ -1,6 +1,8 @@
 from fastapi import APIRouter,Depends,HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+import numpy as np
+from sklearn.ensemble import IsolationForest
 
 from app.db.session import get_db
 from app.models.transaction import Transaction
@@ -53,18 +55,14 @@ async def check_anomalies(
     if len(expenses) < 3:
         return {"anomalies": [], "total_flagged": 0}
 
-    amounts = [float(t.amount) for t in expenses]
-    mean = sum(amounts) / len(amounts)
-    variance = sum((a - mean) ** 2 for a in amounts) / len(amounts)
-    std = variance ** 0.5
+    amounts = np.array([float(t.amount) for t in expenses]).reshape(-1, 1)
+    clf = IsolationForest(contamination=0.2, random_state=42)
+    preds = clf.fit_predict(amounts)
 
-    flagged = []
-    if std > 0:
-        for t in expenses:
-            z = abs(float(t.amount) - mean) / std
-            if z > 1.5:
-                flagged.append({"id": t.id, "amount": float(t.amount), "description": t.description})
-
+    flagged = [
+        {"id": t.id, "amount": float(t.amount), "description": t.description}
+        for t, pred in zip(expenses, preds) if pred == -1
+    ]
     return {"anomalies": flagged, "total_flagged": len(flagged)}
 
     
