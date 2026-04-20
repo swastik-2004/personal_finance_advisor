@@ -8,7 +8,7 @@ A production-grade full-stack AI-powered personal finance application combining 
 
 ## Features
 
-- **Transaction Management** — Add income/expense transactions manually or via CSV upload
+- **Transaction Management** — Add income/expense transactions manually
 - **Auto Categorization** — TF-IDF + Logistic Regression classifier predicts category as you type the description
 - **Spending Forecasting** — Predicts next month's expenses from historical monthly averages
 - **Anomaly Detection** — Isolation Forest flags unusual spending patterns personalized to your data
