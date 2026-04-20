@@ -14,7 +14,7 @@ def retrieve_node(state: ChatState) -> ChatState:
     return state
 
 def respond_node(state: ChatState) -> ChatState:
-    state["response"] = ask_chatbot(state["query"], state["transactions"])
+    state["response"] = ask_chatbot(state["query"], state["context"],state["transactions"])
     return state
 
 def build_graph():

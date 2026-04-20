@@ -1,11 +1,10 @@
 from groq import Groq
 from app.core.config import settings
-from rag.retriever import retrieve_context
 
 client = Groq(api_key=settings.groq_api_key)
 
-def ask_chatbot(query: str, user_transactions: list[dict] = []) -> str:
-    context = retrieve_context(query)
+def ask_chatbot(query: str,context:str= "", user_transactions: list[dict] = []) -> str:
+    
 
     transaction_summary = ""
     if user_transactions:

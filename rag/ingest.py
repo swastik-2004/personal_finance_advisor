@@ -16,6 +16,17 @@ FINANCE_KNOWLEDGE = [
     "Term life insurance is generally more cost-effective than whole life.",
     "Tax-advantaged accounts like 401k and IRA reduce taxable income.",
     "Avoid lifestyle inflation — increase savings as income grows.",
+        "The debt snowball method pays off smallest debts first for psychological wins.",
+    "The debt avalanche method pays off highest interest debt first to save money.",
+    "A net worth statement lists all assets minus all liabilities.",
+    "Dollar cost averaging reduces risk by investing fixed amounts regularly.",
+    "An HSA (Health Savings Account) offers triple tax advantages for medical costs.",
+    "Roth IRA contributions are made after-tax but withdrawals in retirement are tax-free.",
+    "Credit score is affected by payment history, utilization, and account age.",
+    "Keeping credit utilization below 30% helps maintain a good credit score.",
+    "Rebalancing a portfolio annually keeps your risk level aligned with your goals.",
+    "Inflation erodes purchasing power — investments should outpace inflation over time.",
+
 ]
 
 def build_vector_store():
