@@ -2,7 +2,7 @@
 
 A production-grade full-stack AI-powered personal finance application combining backend engineering, machine learning, and LLM-based RAG to help users track spending, get predictions, and receive personalized financial advice.
 
-**Live Demo:** https://personal-finance-advisor-ovjk.onrender.com
+**Live Demo:** https://personal-finance-advisor-one.vercel.app
 
 ---
 
@@ -261,8 +261,6 @@ docker run -p 8000:8000 --env-file .env finance-advisor
 - [x] CSV export
 - [x] Docker + Render deployment
 - [x] FAISS vector store (semantic retrieval) — local only, live demo uses in-memory retrieval
-- [ ] GitHub Actions CI/CD
-- [ ] Bank API integration (Plaid)
 
 ---
 
