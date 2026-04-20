@@ -497,25 +497,33 @@ async function loadTransactions() {
 }
 
 async function loadMLStats() {
+  // Forecast
   try {
-    const [fRes, aRes] = await Promise.all([
-      api('/predict/forecast'),
-      api('/predicted/anomalies')
-    ]);
+    const fRes = await api('/predict/forecast');
     if (fRes.ok) {
       const f = await fRes.json();
       document.getElementById('stat-forecast').textContent = `$${f.predicted_monthly_spending}`;
     } else {
+      const err = await fRes.json().catch(() => ({}));
+      console.error('Forecast error:', fRes.status, err.detail);
       document.getElementById('stat-forecast').textContent = 'No data';
     }
+  } catch (e) {
+    console.error('Forecast fetch error:', e);
+    document.getElementById('stat-forecast').textContent = 'No data';
+  }
+  // Anomalies
+  try {
+    const aRes = await api('/predicted/anomalies');
     if (aRes.ok) {
       const a = await aRes.json();
       document.getElementById('stat-anomalies').textContent = a.total_flagged;
+    } else {
+      const err = await aRes.json().catch(() => ({}));
+      console.error('Anomaly error:', aRes.status, err.detail);
     }
   } catch (e) {
-    document.getElementById('stat-forecast').textContent = 'Error';
-    document.getElementById('stat-anomalies').textContent = 'Error';
-    console.error('ML stats error:', e);
+    console.error('Anomaly fetch error:', e);
   }
 }
 
