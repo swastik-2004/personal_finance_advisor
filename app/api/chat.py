@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from pydantic import BaseModel
@@ -26,5 +26,8 @@ async def chat(
     transactions = result.scalars().all()
     transaction_data = [{"amount": float(t.amount), "category": t.category} for t in transactions]
 
-    response = run_chat(request.query, transaction_data)
+    try:
+        response = run_chat(request.query, transaction_data)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Chat error: {str(e)}")
     return {"query": request.query, "response": response}

@@ -512,7 +512,11 @@ async function loadMLStats() {
       const a = await aRes.json();
       document.getElementById('stat-anomalies').textContent = a.total_flagged;
     }
-  } catch (e) { /* silently fail ML stats */ }
+  } catch (e) {
+    document.getElementById('stat-forecast').textContent = 'Error';
+    document.getElementById('stat-anomalies').textContent = 'Error';
+    console.error('ML stats error:', e);
+  }
 }
 
 function renderTransactions(txs) {
@@ -613,7 +617,8 @@ async function sendChat() {
     if (!res.ok) throw new Error(data.detail || 'Chat error');
     updateMessage(thinkingId, data.response);
   } catch (err) {
-    updateMessage(thinkingId, `<span class="text-error">${err.message}</span>`);
+    const el = document.getElementById(thinkingId);
+    if (el) el.querySelector('p').innerHTML = `<span class="text-red-500">${escapeHtml(err.message)}</span>`;
   } finally {
     document.getElementById('send-btn').disabled = false;
   }
