@@ -521,9 +521,11 @@ async function loadMLStats() {
     } else {
       const err = await aRes.json().catch(() => ({}));
       console.error('Anomaly error:', aRes.status, err.detail);
+      document.getElementById('stat-anomalies').textContent = '0';
     }
   } catch (e) {
     console.error('Anomaly fetch error:', e);
+    document.getElementById('stat-anomalies').textContent = '0';
   }
 }
 

@@ -62,7 +62,7 @@ async def check_anomalies(
     if std > 0:
         for t in expenses:
             z = abs(float(t.amount) - mean) / std
-            if z > 2.0:
+            if z > 1.5:
                 flagged.append({"id": t.id, "amount": float(t.amount), "description": t.description})
 
     return {"anomalies": flagged, "total_flagged": len(flagged)}
