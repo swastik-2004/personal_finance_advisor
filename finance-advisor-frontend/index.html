@@ -215,14 +215,22 @@
         </div>
       </div>
 
-      <!-- Category Breakdown Chart -->
-      <div class="rounded-3xl p-6 shadow-sm mb-10" style="background: linear-gradient(135deg, #f7f9fb 0%, #edf1f7 100%); border: 1px solid #e2e8f0">
-        <h2 class="font-headline font-bold text-lg text-primary mb-4">Spending by Category</h2>
-        <div class="flex flex-col md:flex-row items-center gap-8">
-          <div class="w-56 h-56 flex-shrink-0">
-            <canvas id="category-chart"></canvas>
+      <!-- Charts Row -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+        <!-- Category Breakdown -->
+        <div class="rounded-3xl p-6 shadow-sm" style="background: linear-gradient(135deg, #f7f9fb 0%, #edf1f7 100%); border: 1px solid #e2e8f0">
+          <h2 class="font-headline font-bold text-lg text-primary mb-4">Spending by Category</h2>
+          <div class="flex flex-col md:flex-row items-center gap-6">
+            <div class="w-44 h-44 flex-shrink-0">
+              <canvas id="category-chart"></canvas>
+            </div>
+            <div id="category-legend" class="flex flex-wrap gap-3"></div>
           </div>
-          <div id="category-legend" class="flex flex-wrap gap-3"></div>
+        </div>
+        <!-- Monthly Trend -->
+        <div class="rounded-3xl p-6 shadow-sm" style="background: linear-gradient(135deg, #f7f9fb 0%, #edf1f7 100%); border: 1px solid #e2e8f0">
+          <h2 class="font-headline font-bold text-lg text-primary mb-4">Monthly Spending Trend</h2>
+          <canvas id="trend-chart" height="160"></canvas>
         </div>
       </div>
 
@@ -512,6 +520,47 @@ async function loadDashboard() {
 }
 
 let categoryChartInstance = null;
+let trendChartInstance = null;
+
+function renderTrendChart(transactions) {
+  const expenses = transactions.filter(t => t.transaction_type === 'expense');
+  const monthly = {};
+  expenses.forEach(t => {
+    const d = new Date(t.date);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    monthly[key] = (monthly[key] || 0) + t.amount;
+  });
+  const labels = Object.keys(monthly).sort();
+  const data = labels.map(k => monthly[k]);
+  const display = labels.map(k => { const [y, m] = k.split('-'); return new Date(y, m - 1).toLocaleString('default', { month: 'short', year: '2-digit' }); });
+
+  const ctx = document.getElementById('trend-chart').getContext('2d');
+  if (trendChartInstance) trendChartInstance.destroy();
+  trendChartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: display,
+      datasets: [{
+        label: 'Spending ($)',
+        data,
+        borderColor: '#4a5f81',
+        backgroundColor: 'rgba(74,95,129,0.1)',
+        borderWidth: 2.5,
+        pointBackgroundColor: '#4a5f81',
+        pointRadius: 5,
+        tension: 0.4,
+        fill: true,
+      }]
+    },
+    options: {
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+        y: { grid: { color: '#e2e8f040' }, ticks: { font: { size: 11 }, callback: v => `$${v}` } }
+      }
+    }
+  });
+}
 
 function renderCategoryChart(transactions) {
   const expenses = transactions.filter(t => t.transaction_type === 'expense');
@@ -554,6 +603,7 @@ async function loadTransactions() {
     const total = txs.filter(t => t.transaction_type === 'expense').reduce((s, t) => s + t.amount, 0);
     document.getElementById('stat-total').textContent = `$${total.toFixed(2)}`;
     renderCategoryChart(txs);
+    renderTrendChart(txs);
   } catch (e) {
     document.getElementById('tx-list').innerHTML = `<p class="text-error text-sm text-center py-4">${e.message}</p>`;
   }
