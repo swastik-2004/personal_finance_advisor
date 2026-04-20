@@ -227,6 +227,7 @@
                 <option value="Health">Health</option>
                 <option value="Entertainment">Entertainment</option>
                 <option value="Utilities">Utilities</option>
+                <option value="Income">Income</option>
                 <option value="Other">Other</option>
               </select>
             </div>
@@ -488,7 +489,7 @@ async function loadTransactions() {
     const res = await api('/transactions');
     const txs = await res.json();
     renderTransactions(txs);
-    const total = txs.reduce((s, t) => s + t.amount, 0);
+    const total = txs.filter(t => t.transaction_type === 'expense').reduce((s, t) => s + t.amount, 0);
     document.getElementById('stat-total').textContent = `$${total.toFixed(2)}`;
   } catch (e) {
     document.getElementById('tx-list').innerHTML = `<p class="text-error text-sm text-center py-4">${e.message}</p>`;
@@ -523,11 +524,12 @@ function renderTransactions(txs) {
   const categoryColors = {
     Food: 'text-orange-500', Rent: 'text-blue-500', Travel: 'text-purple-500',
     Shopping: 'text-pink-500', Health: 'text-red-500', Entertainment: 'text-yellow-500',
-    Utilities: 'text-cyan-500', Other: 'text-slate-500'
+    Utilities: 'text-cyan-500', Other: 'text-slate-500', Income: 'text-green-500'
   };
   const categoryIcons = {
     Food: 'restaurant', Rent: 'home', Travel: 'flight', Shopping: 'shopping_bag',
-    Health: 'medical_services', Entertainment: 'movie', Utilities: 'bolt', Other: 'receipt'
+    Health: 'medical_services', Entertainment: 'movie', Utilities: 'bolt', Other: 'receipt',
+    Income: 'payments'
   };
   el.innerHTML = txs.slice().reverse().map(t => {
     const cat = t.category || 'Other';

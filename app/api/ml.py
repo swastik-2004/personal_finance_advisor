@@ -29,8 +29,14 @@ async def forecast_monthly_spending(
     if not transactions:
         raise HTTPException(status_code=400, detail="No transactions found to forecast")
     
-    data=[{"amount":float(t.amount), "date": t.date} for t in transactions]
-    forecast = forecast_spending(data)
+    expenses = [t for t in transactions if t.transaction_type == "expense"]
+    if not expenses:
+        raise HTTPException(status_code=400, detail="No expense transactions found to forecast")
+    data=[{"amount":float(t.amount), "date": t.date} for t in expenses]
+    try:
+        forecast = forecast_spending(data)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Forecast error: {str(e)}")
     return {"predicted_monthly_spending": round(forecast, 2)}
 
 @router.get("/predicted/anomalies")
@@ -45,7 +51,7 @@ async def check_anomalies(
 
     flagged = []
     for t in transactions:
-        if detect_anomaly(float(t.amount)):
+        if t.transaction_type == "expense" and detect_anomaly(float(t.amount)):
             flagged.append({"id": t.id, "amount": float(t.amount), "description": t.description})
 
     return {"anomalies": flagged, "total_flagged": len(flagged)}
