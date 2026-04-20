@@ -6,7 +6,7 @@ from app.db.session import get_db
 from app.models.transaction import Transaction
 from app.models.user import User
 from app.auth import get_current_user
-from ml.predict import predict_category,detect_anomaly,forecast_spending
+from ml.predict import predict_category, forecast_spending
 
 router=APIRouter()
 
@@ -49,10 +49,21 @@ async def check_anomalies(
     )
     transactions = result.scalars().all()
 
+    expenses = [t for t in transactions if t.transaction_type == "expense"]
+    if len(expenses) < 3:
+        return {"anomalies": [], "total_flagged": 0}
+
+    amounts = [float(t.amount) for t in expenses]
+    mean = sum(amounts) / len(amounts)
+    variance = sum((a - mean) ** 2 for a in amounts) / len(amounts)
+    std = variance ** 0.5
+
     flagged = []
-    for t in transactions:
-        if t.transaction_type == "expense" and detect_anomaly(float(t.amount)):
-            flagged.append({"id": t.id, "amount": float(t.amount), "description": t.description})
+    if std > 0:
+        for t in expenses:
+            z = abs(float(t.amount) - mean) / std
+            if z > 2.0:
+                flagged.append({"id": t.id, "amount": float(t.amount), "description": t.description})
 
     return {"anomalies": flagged, "total_flagged": len(flagged)}
 
