@@ -6,6 +6,7 @@ __pycache__/
 venv/
 *.egg-info/
 .pytest_cache/
-ml/models/*.pkl
+ml/models/anomaly_detector.pkl
+ml/models/label_encoder.pkl
 ml/models/*.joblib
 rag/vectorstore/
