@@ -1,3 +1,4 @@
+import asyncio
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -27,7 +28,7 @@ async def chat(
     transaction_data = [{"amount": float(t.amount), "category": t.category} for t in transactions]
 
     try:
-        response = run_chat(request.query, transaction_data)
+        response = await asyncio.to_thread(run_chat, request.query, transaction_data)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Chat error: {str(e)}")
     return {"query": request.query, "response": response}
