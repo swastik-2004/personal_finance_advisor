@@ -8,7 +8,7 @@ from app.schemas.transaction import TransactionCreate, TransactionResponse
 from app.auth import get_current_user
 from app.models.user import User
 
-router = APIRouter()
+router = APIRouter(redirect_slashes=False)
 
 @router.post("/", response_model=TransactionResponse, status_code=201)
 async def create_transaction(
