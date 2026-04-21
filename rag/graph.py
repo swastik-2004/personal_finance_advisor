@@ -8,7 +8,10 @@ from rag.chatbot import ask_chatbot
 if os.getenv("LITE_MODE", "false").lower() == "true":
     from rag.retriever_lite import retrieve_context
 else:
-    from rag.retriever import retrieve_context
+    try:
+        from rag.retriever import retrieve_context
+    except ImportError:
+        from rag.retriever_lite import retrieve_context
 
 class ChatState(TypedDict):
     query: str
