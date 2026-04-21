@@ -15,10 +15,13 @@ app=FastAPI(title=settings.app_name,debug=settings.debug)
 
 @app.on_event("startup")
 async def create_tables():
-    engine = create_async_engine(settings.database_url)
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    await engine.dispose()
+    try:
+        engine = create_async_engine(settings.database_url)
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        await engine.dispose()
+    except Exception as e:
+        print(f"WARNING: Could not connect to database at startup: {e}")
 
 app.add_middleware(
     CORSMiddleware,
